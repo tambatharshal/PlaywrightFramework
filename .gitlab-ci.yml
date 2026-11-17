@@ -1,0 +1,166 @@
+# GitLab CI/CD — Playwright UI + API
+# Manual run: CI/CD → Pipelines → Run pipeline → set ENV / SUITE variables
+
+stages:
+  - install
+  - test
+  - report
+
+variables:
+  ENV: 'qa'                 # qa | staging | prod | local
+  SUITE: 'all'              # all | ui | api
+  CI: 'true'
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+  PLAYWRIGHT_BROWSERS_PATH: '$CI_PROJECT_DIR/.cache/ms-playwright'
+  FF_USE_FASTZIP: 'true'
+
+default:
+  image: mcr.microsoft.com/playwright:v1.49.0-jammy
+  interruptible: true
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+      - .cache/ms-playwright/
+      - node_modules/
+    policy: pull-push
+
+# ---------------------------------------------------------------------------
+# Install
+# ---------------------------------------------------------------------------
+install_deps:
+  stage: install
+  script:
+    - node -v
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+# ---------------------------------------------------------------------------
+# Tests (parallel)
+# ---------------------------------------------------------------------------
+.test_template: &test_template
+  stage: test
+  needs:
+    - job: install_deps
+      artifacts: true
+  dependencies:
+    - install_deps
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - playwright-report/
+      - test-results/
+      - allure-results/
+    reports:
+      junit: test-results/junit-report.xml
+  after_script:
+    - echo "ENV=$ENV SUITE=$SUITE PROJECT=$PROJECT"
+
+ui_chromium:
+  <<: *test_template
+  variables:
+    PROJECT: chromium
+  rules:
+    - if: $SUITE == "api"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - npx playwright install --with-deps chromium
+    - npx playwright test --project=chromium
+  # Optional DB secrets (Settings → CI/CD → Variables):
+  # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+
+api_tests:
+  <<: *test_template
+  variables:
+    PROJECT: api
+  rules:
+    - if: $SUITE == "ui"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - npx playwright test --project=api
+
+# Optional: enable cross-browser by un-commenting
+# ui_firefox:
+#   <<: *test_template
+#   variables:
+#     PROJECT: firefox
+#   rules:
+#     - if: $SUITE == "api"
+#       when: never
+#     - when: on_success
+#   script:
+#     - npx playwright install --with-deps firefox
+#     - npx playwright test --project=firefox
+
+# ui_webkit:
+#   <<: *test_template
+#   variables:
+#     PROJECT: webkit
+#   rules:
+#     - if: $SUITE == "api"
+#       when: never
+#     - when: on_success
+#   script:
+#     - npx playwright install --with-deps webkit
+#     - npx playwright test --project=webkit
+
+# ---------------------------------------------------------------------------
+# Allure report (needs Java in image — skip if unavailable)
+# ---------------------------------------------------------------------------
+allure_report:
+  stage: report
+  image: mcr.microsoft.com/playwright:v1.49.0-jammy
+  needs:
+    - job: ui_chromium
+      optional: true
+      artifacts: true
+    - job: api_tests
+      optional: true
+      artifacts: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_COMMIT_BRANCH
+      when: always
+  allow_failure: true
+  script:
+    - apt-get update -qq && apt-get install -y -qq default-jre-headless || true
+    - npm ci
+    - |
+      if [ -d allure-results ] && [ "$(ls -A allure-results 2>/dev/null)" ]; then
+        npm run allure:generate
+      else
+        echo "No allure-results found; skipping generation"
+        mkdir -p allure-report
+        echo "No results" > allure-report/README.txt
+      fi
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - allure-report/

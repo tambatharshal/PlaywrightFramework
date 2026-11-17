@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Playwright Framework — Interview Guide</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Calibri, Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.35;
+      color: #1a1a1a;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 18pt;
+      margin: 0 0 4px;
+      color: #0f3d4c;
+      border-bottom: 3px solid #3ddc91;
+      padding-bottom: 6px;
+    }
+    .subtitle { color: #5c6b73; margin: 0 0 14px; font-size: 10pt; }
+    h2 {
+      font-size: 12.5pt;
+      color: #0f3d4c;
+      margin: 16px 0 6px;
+      page-break-after: avoid;
+      border-left: 4px solid #3ddc91;
+      padding-left: 8px;
+    }
+    h3 {
+      font-size: 11pt;
+      margin: 10px 0 4px;
+      color: #163038;
+      page-break-after: avoid;
+    }
+    p { margin: 4px 0 6px; }
+    ul, ol { margin: 4px 0 8px; padding-left: 18px; }
+    li { margin: 2px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 10px;
+      font-size: 9.5pt;
+    }
+    th, td {
+      border: 1px solid #cfd8dc;
+      padding: 5px 7px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #e8f5ef; color: #0f3d4c; }
+    code, .mono {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 9pt;
+      background: #f3f6f8;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    pre {
+      background: #f3f6f8;
+      border: 1px solid #d8dee3;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 8.5pt;
+      overflow: hidden;
+      white-space: pre-wrap;
+      page-break-inside: avoid;
+    }
+    .box {
+      background: #f7fbf9;
+      border: 1px solid #cfe8da;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin: 8px 0;
+      page-break-inside: avoid;
+    }
+    .script {
+      background: #fffef5;
+      border-left: 4px solid #e6b800;
+    }
+    .footer {
+      margin-top: 18px;
+      font-size: 8.5pt;
+      color: #78909c;
+      border-top: 1px solid #cfd8dc;
+      padding-top: 6px;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .avoid-break { page-break-inside: avoid; }
+  </style>
+</head>
+<body>
+  <h1>Playwright Standard Framework — Interview Guide</h1>
+  <p class="subtitle">From scratch explanation · Architecture · Design decisions · Interview Q&amp;A · Commands</p>
+
+  <h2>1. What is Playwright &amp; Why a Framework?</h2>
+  <p><strong>Playwright</strong> (Microsoft) automates Chromium, Firefox, WebKit and can also call APIs.</p>
+  <p>Raw scripts work for 2–3 tests, but fail at scale (copied selectors, hardcoded passwords, mixed envs, no CI). A <strong>framework</strong> = structure + rules + reusable layers so the team writes tests the same way.</p>
+
+  <h2>2. How We Built It (Order)</h2>
+  <table>
+    <tr><th>#</th><th>Added</th><th>Why</th></tr>
+    <tr><td>1</td><td><code>package.json</code>, TypeScript, Playwright</td><td>Project can run</td></tr>
+    <tr><td>2</td><td><code>playwright.config.ts</code></td><td>Browsers, timeouts, reports, baseURL</td></tr>
+    <tr><td>3</td><td><code>config/</code> env JSON</td><td>Same tests, different environments</td></tr>
+    <tr><td>4</td><td><code>data/users/</code></td><td>Users per env, not hardcoded</td></tr>
+    <tr><td>5</td><td><code>pages/</code> (POM)</td><td>Reusable UI actions</td></tr>
+    <tr><td>6</td><td><code>api/</code></td><td>API clients same style as UI</td></tr>
+    <tr><td>7</td><td><code>fixtures/</code></td><td>Inject pages/users into tests</td></tr>
+    <tr><td>8</td><td><code>tests/ui</code> + <code>tests/api</code></td><td>Scenarios only</td></tr>
+    <tr><td>9</td><td><code>utils/</code></td><td>Excel, DB, date, string helpers</td></tr>
+    <tr><td>10</td><td>CI + Allure</td><td>Pipeline ready</td></tr>
+    <tr><td>11</td><td><code>dummy-app/</code></td><td>Local practice UI + API</td></tr>
+    <tr><td>12</td><td><code>.cursor/</code> rules, skills, MCP</td><td>Jira → test AI workflow</td></tr>
+  </table>
+  <div class="box"><strong>Interview line:</strong> “I designed bottom-up: config and POM first, then fixtures, then tests, then CI—so tests stay thin and infrastructure stays reusable.”</div>
+
+  <h2>3. Architecture (Big Picture)</h2>
+  <pre>ENV=qa|staging|prod|local
+        │
+        ▼
+config/*.env.json  +  data/users/*.json
+        │
+   ┌────┴────┐
+   ▼         ▼
+pages/     api/
+(UI POM)  (REST clients)
+   │         │
+   └── fixtures/ ──┐
+                   ▼
+            tests/ui + tests/api
+                   │
+            utils/ (excel, db, ...)
+                   │
+         CI + HTML / JUnit / Allure</pre>
+  <div class="box"><strong>One sentence:</strong> “TypeScript Playwright framework with POM for UI, API clients for REST, multi-env JSON config, custom fixtures, shared utils, CI/CD, and Allure.”</div>
+
+  <h2>4. Folder Guide</h2>
+
+  <h3>playwright.config.ts</h3>
+  <ul>
+    <li>Projects: <code>chromium</code>, <code>firefox</code>, <code>webkit</code>, <code>api</code>, <code>utils</code></li>
+    <li>CI retries, screenshots/video/trace on failure</li>
+    <li><code>baseURL</code> from env; reporters: list, HTML, JUnit, Allure</li>
+    <li><code>ENV=local</code> starts dummy-app via <code>webServer</code></li>
+  </ul>
+
+  <h3>config/ — Multi-environment</h3>
+  <p>Files: <code>qa|staging|prod|local.env.json</code> + <code>env.config.ts</code>. Contains baseUrl, apiBaseUrl, timeouts, DB, feature flags.</p>
+  <p>Switch: <code>npm run test:qa</code> / <code>test:staging</code> / <code>test:local</code>. Secrets override via <code>.env</code> / CI (<code>DB_*</code>).</p>
+  <p><strong>Add new env:</strong> copy JSON + users → update <code>EnvironmentName</code> → add npm script.</p>
+
+  <h3>data/users/ — Credentials</h3>
+  <p>Keys like <code>standard</code>, <code>locked</code>, <code>apiAdmin</code>. Tests use fixtures / <code>getUser('standard')</code> — never hardcode passwords in specs.</p>
+
+  <h3>pages/ — Page Object Model</h3>
+  <table>
+    <tr><th>File</th><th>Role</th></tr>
+    <tr><td><code>base.page.ts</code></td><td>Shared click/fill/navigate/wait</td></tr>
+    <tr><td><code>login.page.ts</code></td><td>Login</td></tr>
+    <tr><td><code>inventory.page.ts</code></td><td>Products / cart badge</td></tr>
+    <tr><td><code>cart.page.ts</code></td><td>Cart</td></tr>
+    <tr><td><code>checkout-*.page.ts</code></td><td>Checkout flow</td></tr>
+  </table>
+  <p><strong>Bad:</strong> selectors inside specs. <strong>Good:</strong> <code>await loginPage.login(user.username, user.password)</code>.</p>
+  <p><strong>Why POM:</strong> reuse, one fix when UI changes, tests read like business steps.</p>
+
+  <h3>api/ — API layer</h3>
+  <p><code>base.api.ts</code> (GET/POST/PUT/PATCH/DELETE) → <code>users.api.ts</code> (ReqRes), <code>products.api.ts</code> (local dummy).</p>
+
+  <h3>fixtures/test.fixture.ts</h3>
+  <p>Extends Playwright <code>test</code> so every spec gets <code>loginPage</code>, <code>usersApi</code>, <code>standardUser</code>, etc. injected automatically (DRY setup).</p>
+
+  <h3>tests/</h3>
+  <p><code>tests/ui</code> browser · <code>tests/api</code> REST · Arrange → Act → Assert. Tags: <code>@smoke</code>, <code>@ui</code>, <code>@api</code>.</p>
+
+  <h3>utils/</h3>
+  <p>ExcelUtil, DbUtil (MySQL), DateUtil, StringUtil, FileUtil, WaitUtil, AssertUtil. Prefer Playwright auto-wait over hard sleeps.</p>
+
+  <h3>dummy-app/ + practice apps</h3>
+  <ul>
+    <li>Local shop + <code>/api</code> at <code>http://127.0.0.1:4173</code> (<code>ENV=local</code>)</li>
+    <li>UI remote: Sauce Demo · API remote: ReqRes</li>
+  </ul>
+
+  <h3>CI / Reports / Cursor</h3>
+  <ul>
+    <li>CI: GitHub Actions, GitLab (<code>.gitlab-ci.yml</code>), Jenkins, Azure</li>
+    <li>Reports: HTML, JUnit, Allure</li>
+    <li><code>.cursor/</code>: rules + skills + MCP (Jira Atlassian + Playwright browser) for ticket → POM tests</li>
+  </ul>
+
+  <h2>5. One UI Test Flow (Explain Aloud)</h2>
+  <ol>
+    <li><code>ENV=qa</code> loads <code>qa.env.json</code> → baseUrl = Sauce Demo</li>
+    <li>Fixture creates LoginPage, InventoryPage, standardUser</li>
+    <li>Test: open → login → expectLoaded</li>
+    <li>On failure: screenshot / video / trace</li>
+    <li>Result goes to HTML / Allure / JUnit</li>
+  </ol>
+
+  <h2>6. Design Points Interviewers Love (Memorize)</h2>
+  <ol>
+    <li>Separation of concerns (pages / api / tests / config / utils)</li>
+    <li>POM — no selectors in specs</li>
+    <li>Multi-env via JSON + <code>ENV</code></li>
+    <li>Externalized users/data</li>
+    <li>UI + API in one repo</li>
+    <li>Custom fixtures</li>
+    <li>Stable locators (<code>data-test</code>, role, label)</li>
+    <li>CI-friendly (retries, artifacts)</li>
+    <li>Reporting (HTML + Allure + JUnit)</li>
+    <li>Secrets via env/CI — not committed for real systems</li>
+    <li>Scalable — add page/API/env without rewrite</li>
+    <li>Maintainable — UI change → fix one page class</li>
+  </ol>
+
+  <h2>7. Two-Minute Interview Script</h2>
+  <div class="box script">
+    “I built a Playwright TypeScript automation framework for UI and API testing.<br/><br/>
+    UI uses Page Object Model—page classes hold locators and actions; tests call business methods only.<br/><br/>
+    API wraps Playwright’s request context in clients like UsersApi.<br/><br/>
+    Config is environment-driven: QA, staging, prod, local JSON files for URLs, timeouts, DB—selected by ENV. Users live in separate JSON per environment.<br/><br/>
+    Custom fixtures inject pages, API clients, and users. Utils cover Excel, MySQL, dates, and random data.<br/><br/>
+    It integrates with GitHub Actions, GitLab, Jenkins, and Azure; publishes HTML/JUnit/Allure reports; and includes a local dummy app. We also added Cursor rules/skills so Jira MCP + Playwright MCP generate POM tests following the same standards.”
+  </div>
+
+  <h2>8. Common Q&amp;A</h2>
+  <div class="avoid-break">
+    <p><strong>Q. Why Playwright over Selenium?</strong><br/>Auto-wait, multi-browser, tracing, API in same tool, parallel workers, modern selectors, often less flaky.</p>
+    <p><strong>Q. What is POM?</strong><br/>UI in page classes; tests describe behavior. One place to fix when UI changes.</p>
+    <p><strong>Q. Multiple environments?</strong><br/>ENV loads config/&lt;env&gt;.env.json; users from data/users; CI passes ENV.</p>
+    <p><strong>Q. Test data?</strong><br/>User JSON, Excel/JSON under data/, StringUtil for unique values, optional DbUtil.</p>
+    <p><strong>Q. Reduce flakiness?</strong><br/>Auto-wait, no fixed sleeps, stable locators, CI retries, traces, isolated data, no order dependency.</p>
+    <p><strong>Q. UI vs API?</strong><br/>Same repo. UI → pages + browser projects. API → api/ + api project (no browser). Shared config/fixtures.</p>
+    <p><strong>Q. What is a fixture?</strong><br/>Playwright setup injection. We extend test so loginPage / usersApi / standardUser are ready.</p>
+    <p><strong>Q. CI/CD?</strong><br/>Install Node + browsers, set ENV/CI, run projects, publish artifacts.</p>
+    <p><strong>Q. Smoke only?</strong><br/><code>npx playwright test --grep @smoke</code></p>
+    <p><strong>Q. Locator changed?</strong><br/>Update page object only; specs keep working.</p>
+    <p><strong>Q. Debug failures?</strong><br/>HTML report, screenshot/video, <code>--debug</code>, trace viewer, headed mode.</p>
+    <p><strong>Q. Add a new page?</strong><br/>New page class → register fixture → new spec under tests/ui.</p>
+  </div>
+
+  <h2>9. Commands to Remember</h2>
+  <pre>npm install
+npx playwright install
+
+npm test                 # QA default
+npm run test:ui          # UI chromium
+npm run test:api         # API
+npm run test:local       # local dummy app
+npm run test:headed
+npm run test:debug
+npm run report           # Playwright HTML
+npm run allure:report    # Allure (needs Java)</pre>
+
+  <h2>10. Whiteboard Tip</h2>
+  <p>Draw 5 boxes: <strong>Config/Users → Pages+API → Fixtures → Tests → CI+Reports</strong>.</p>
+
+  <h2>11. Closing Line</h2>
+  <div class="box">“It’s not just scripts—it’s a full standard: multi-env, POM, API layer, fixtures, utils, dummy app, multi-CI, Allure, and AI/Jira MCP skills so the team scales the same way.”</div>
+
+  <p class="footer">Playwright Standard Framework · Interview cheat sheet · Generated for Harshal · Practice apps: Sauce Demo (UI), ReqRes (API), local dummy-app</p>
+</body>
+</html>

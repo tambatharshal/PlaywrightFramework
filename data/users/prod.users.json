@@ -1,0 +1,16 @@
+{
+  "users": {
+    "standard": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "standard.prod@example.com"
+    },
+    "apiAdmin": {
+      "username": "eve.holt@reqres.in",
+      "password": "cityslicka",
+      "role": "admin",
+      "email": "eve.holt@reqres.in"
+    }
+  }
+}

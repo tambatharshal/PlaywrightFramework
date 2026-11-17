@@ -1,0 +1,14 @@
+---
+description: Core Playwright framework conventions (POM, env, fixtures)
+alwaysApply: true
+---
+
+# Playwright Framework Rules
+
+- Use **Page Object Model**: locators + actions in `pages/`, never raw selectors inside specs.
+- Use custom fixtures from `fixtures/test.fixture.ts` (`test`, `expect`) — do not import `@playwright/test` in UI/API specs unless writing util self-tests.
+- Read env via `getEnvConfig()` / `getUser()` from `config/env.config.ts`. Never hardcode URLs, credentials, or timeouts.
+- Switch environment with `ENV=qa|staging|prod` only. Add new envs by copying `config/<env>.env.json` + `data/users/<env>.users.json`.
+- UI tests live in `tests/ui/`; API tests in `tests/api/`; shared helpers in `utils/`.
+- Prefer Playwright auto-waiting over `WaitUtil.sleep`. Use utils for Excel/DB/date/string/file only.
+- Keep secrets out of git: use `.env` locally and CI secret stores for `DB_*` overrides.

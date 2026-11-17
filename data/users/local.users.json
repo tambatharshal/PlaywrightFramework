@@ -1,0 +1,22 @@
+{
+  "users": {
+    "standard": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "standard.local@example.com"
+    },
+    "locked": {
+      "username": "locked_out_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "locked.local@example.com"
+    },
+    "apiAdmin": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "role": "admin",
+      "email": "admin.local@example.com"
+    }
+  }
+}

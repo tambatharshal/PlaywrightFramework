@@ -1,0 +1,35 @@
+---
+description: Integrate Jira (Atlassian MCP) + Playwright MCP with this POM framework
+alwaysApply: true
+---
+
+# Jira + Playwright MCP
+
+When the user mentions a Jira ticket, AC, or "generate test from Jira":
+
+1. Use **Atlassian MCP** (`user-Atlassian-MCP-Server`) to fetch the issue — never invent AC.
+2. Use **Playwright MCP** (`user-playwright`) to explore the live UI and capture real selectors.
+3. Implement tests in this repo’s POM style only (see other `.cursor/rules`).
+
+## Tool routing
+
+| Goal | MCP / tool |
+|------|------------|
+| Read ticket / AC | `getJiraIssue`, `searchJiraIssuesUsingJql` |
+| Comment / transition | `addCommentToJiraIssue`, `transitionJiraIssue` |
+| Explore UI | `browser_navigate` → `browser_snapshot` → click/fill |
+| Network / API clues | `browser_network_requests` |
+
+## Code output rules
+
+- Specs: `tests/ui/` or `tests/api/`; import `test`/`expect` from `fixtures/test.fixture.ts`
+- Pages: `pages/*.page.ts` extending `BasePage`; no raw selectors in specs
+- Credentials/URLs: `getUser()` / `getEnvConfig()` — never hardcode
+- Tag tests: `@smoke` / `@regression` + Jira key in title, e.g. `LOGIN-123: standard user can login`
+- After coding, optionally comment the Jira issue with file paths + how to run
+
+## Do not
+
+- Skip MCP exploration and guess fragile CSS/XPath
+- Put assertions only in page objects (except `expectLoaded`)
+- Commit secrets from Jira custom fields into the repo

@@ -1,0 +1,34 @@
+{
+  "users": {
+    "standard": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "standard.qa@example.com"
+    },
+    "locked": {
+      "username": "locked_out_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "locked.qa@example.com"
+    },
+    "problem": {
+      "username": "problem_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "problem.qa@example.com"
+    },
+    "performance": {
+      "username": "performance_glitch_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "perf.qa@example.com"
+    },
+    "apiAdmin": {
+      "username": "eve.holt@reqres.in",
+      "password": "cityslicka",
+      "role": "admin",
+      "email": "eve.holt@reqres.in"
+    }
+  }
+}

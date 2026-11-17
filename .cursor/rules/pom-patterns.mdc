@@ -1,0 +1,25 @@
+---
+description: Page Object and API client patterns
+globs: pages/**/*.ts,api/**/*.ts
+alwaysApply: false
+---
+
+# POM & API Patterns
+
+## Pages
+- Extend `BasePage`.
+- Declare locators in the constructor; expose intent-based methods (`login`, `addProductByName`).
+- Do not assert business outcomes inside pages except light `expectLoaded` helpers.
+
+```typescript
+// ❌ BAD — selector in test
+await page.locator('#user-name').fill('x');
+
+// ✅ GOOD — page method
+await loginPage.login(user.username, user.password);
+```
+
+## API clients
+- Extend `BaseApi`.
+- One client per resource (`UsersApi`).
+- Specs call client methods, then assert status/body — no raw `request.get` in specs.

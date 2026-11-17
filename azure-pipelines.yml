@@ -1,0 +1,55 @@
+trigger:
+  - main
+  - develop
+
+pr:
+  - main
+  - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  ENV: 'qa'
+  CI: 'true'
+
+stages:
+  - stage: Test
+    displayName: 'Playwright Tests'
+    jobs:
+      - job: UI_and_API
+        displayName: 'UI + API'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+            displayName: 'Install Node.js'
+
+          - script: npm ci
+            displayName: 'Install npm dependencies'
+
+          - script: npx playwright install --with-deps chromium
+            displayName: 'Install Playwright browsers'
+
+          - script: npx playwright test --project=chromium --project=api
+            displayName: 'Run tests'
+            env:
+              ENV: $(ENV)
+              CI: true
+              # Map Azure variable groups / secret variables:
+              # DB_PASSWORD: $(DB_PASSWORD)
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'test-results/junit-report.xml'
+              failTaskOnFailedTests: true
+            displayName: 'Publish JUnit results'
+
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: 'playwright-report'
+              artifact: 'playwright-report'
+            displayName: 'Publish HTML report'

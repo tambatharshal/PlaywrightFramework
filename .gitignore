@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/allure-results/
+/allure-report/
+
+# Build
+/dist/
+*.tsbuildinfo
+
+# Env & secrets (keep example files)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temp / exports
+/downloads/
+/temp/
+*.tmp

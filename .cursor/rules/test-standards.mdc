@@ -1,0 +1,14 @@
+---
+description: Spec naming, tags, and assertion standards
+globs: tests/**/*.spec.ts
+alwaysApply: false
+---
+
+# Test Standards
+
+- File name: `<feature>.spec.ts` under `tests/ui` or `tests/api`.
+- Tag suites: `@smoke`, `@ui`, `@api`, `@regression`.
+- Arrange → Act → Assert; one primary behavior per test.
+- Pull users with fixtures (`standardUser`, `lockedUser`) or `getUser('key')`.
+- On failure, rely on configured screenshot/trace/video — do not add manual debug noise.
+- Data-driven Excel cases: read via `ExcelUtil.readSheet`, do not paste large tables into specs.

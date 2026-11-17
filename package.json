@@ -1,0 +1,44 @@
+{
+  "name": "playwright-standard-framework",
+  "version": "1.0.0",
+  "description": "Playwright standard framework with POM, UI + API testing, multi-env config, and CI/CD",
+  "scripts": {
+    "test": "cross-env ENV=qa npx playwright test",
+    "test:qa": "cross-env ENV=qa npx playwright test",
+    "test:staging": "cross-env ENV=staging npx playwright test",
+    "test:prod": "cross-env ENV=prod npx playwright test",
+    "test:local": "cross-env ENV=local npx playwright test --project=chromium --project=api --project=utils",
+    "test:ui": "cross-env ENV=qa npx playwright test --project=chromium tests/ui",
+    "test:api": "cross-env ENV=qa npx playwright test --project=api tests/api",
+    "test:browsers": "cross-env ENV=qa npx playwright test --project=chromium --project=firefox --project=webkit",
+    "test:headed": "cross-env ENV=qa npx playwright test --headed",
+    "test:debug": "cross-env ENV=qa npx playwright test --debug",
+    "dummy:serve": "node dummy-app/server.js",
+    "report": "npx playwright show-report",
+    "allure:generate": "allure generate ./allure-results --clean -o ./allure-report",
+    "allure:open": "allure open ./allure-report",
+    "allure:report": "npm run allure:generate && npm run allure:open",
+    "codegen": "npx playwright codegen",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "playwright",
+    "pom",
+    "api",
+    "ui",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "allure-commandline": "^2.32.0",
+    "allure-playwright": "^3.0.7",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
+    "mysql2": "^3.11.5",
+    "typescript": "^5.7.2",
+    "xlsx": "^0.18.5"
+  }
+}

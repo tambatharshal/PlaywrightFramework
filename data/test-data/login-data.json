@@ -1,0 +1,14 @@
+{
+  "scenarios": [
+    {
+      "name": "valid_standard_user",
+      "userKey": "standard",
+      "expected": "inventory"
+    },
+    {
+      "name": "locked_out_user",
+      "userKey": "locked",
+      "expected": "error"
+    }
+  ]
+}

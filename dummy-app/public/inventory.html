@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dummy Shop — Products</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button id="react-burger-menu-btn" type="button">☰</button>
+      <h1>DUMMY SHOP</h1>
+    </div>
+    <a class="shopping_cart_link" href="/cart.html" data-test="shopping-cart-link">
+      🛒<span class="shopping_cart_badge" style="display:none"></span>
+    </a>
+  </header>
+
+  <div class="bm-menu-wrap">
+    <a id="logout_sidebar_link" href="/">Logout</a>
+  </div>
+
+  <main class="cart_contents_container">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <h2 class="title">Products</h2>
+      <select data-test="product-sort-container">
+        <option value="az">Name (A to Z)</option>
+        <option value="za">Name (Z to A)</option>
+        <option value="lohi">Price (low to high)</option>
+        <option value="hilo">Price (high to low)</option>
+      </select>
+    </div>
+    <div class="inventory_list"></div>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

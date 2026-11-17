@@ -1,0 +1,22 @@
+{
+  "users": {
+    "standard": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "standard.staging@example.com"
+    },
+    "locked": {
+      "username": "locked_out_user",
+      "password": "secret_sauce",
+      "role": "user",
+      "email": "locked.staging@example.com"
+    },
+    "apiAdmin": {
+      "username": "eve.holt@reqres.in",
+      "password": "cityslicka",
+      "role": "admin",
+      "email": "eve.holt@reqres.in"
+    }
+  }
+}

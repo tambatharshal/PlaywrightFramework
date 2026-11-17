@@ -1,0 +1,29 @@
+---
+description: How to use Playwright MCP for locator discovery and test authoring
+alwaysApply: false
+globs: pages/**/*.ts,tests/**/*.spec.ts
+---
+
+# Playwright MCP usage
+
+Use MCP browser tools to discover stable locators before writing POM code.
+
+## Preferred flow
+
+1. `browser_navigate` to `getEnvConfig().baseUrl` (or local dummy app)
+2. `browser_snapshot` — pick roles/labels/`data-test` from the a11y tree
+3. Interact with `browser_click` / `browser_type` / `browser_fill_form` to validate the path
+4. Map confirmed locators into `pages/*.page.ts`
+5. Write the spec against page methods only
+
+## Locator priority
+
+1. `getByRole` / `getByLabel` / `getByTestId` / `[data-test=...]`
+2. Stable text with `getByText` (avoid long copy)
+3. CSS id/class last; avoid positional nth-child when possible
+
+## Practice targets
+
+- UI remote: Sauce Demo (`ENV=qa`)
+- UI local: `ENV=local` → http://127.0.0.1:4173
+- API: ReqRes or local `/api`
